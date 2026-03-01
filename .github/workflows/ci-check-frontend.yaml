@@ -1,4 +1,4 @@
-name: Frontend CI Check
+name: CI Check (Frontend)
 
 on:
     workflow_call:
@@ -21,7 +21,7 @@ on:
                 default: true
 
 jobs:
-    ci-check:
+    ci-check-frontend:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
