@@ -1,0 +1,54 @@
+name: Frontend CI Check
+
+on:
+    workflow_call:
+        inputs:
+            run-format:
+                description: "Run format check"
+                required: false
+                type: boolean
+                default: true
+            run-types:
+                description: "Run types check"
+                required: false
+                type: boolean
+                default: true
+            run-lint:
+                description: "Run lint check"
+                required: false
+                type: boolean
+                default: true
+            run-test:
+                description: "Run tests"
+                required: false
+                type: boolean
+                default: true
+
+jobs:
+    ci-check:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Setup Node
+              uses: actions/setup-node@v6
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run format check
+              if: ${{ inputs.run-format }}
+              run: npm run format:check
+
+            - name: Run types check
+              if: ${{ inputs.run-types }}
+              run: npm run types:check
+
+            - name: Run lint check
+              if: ${{ inputs.run-lint }}
+              run: npm run lint:check
+
+            - name: Run tests
+              if: ${{ inputs.run-tests }}
+              run: npm run test
