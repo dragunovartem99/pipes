@@ -5,22 +5,18 @@ on:
         inputs:
             run-format:
                 description: "Run format check"
-                required: false
                 type: boolean
                 default: true
             run-types:
                 description: "Run types check"
-                required: false
                 type: boolean
                 default: true
             run-lint:
                 description: "Run lint check"
-                required: false
                 type: boolean
                 default: true
             run-test:
-                description: "Run tests"
-                required: false
+                description: "Run the tests"
                 type: boolean
                 default: true
 
@@ -49,6 +45,6 @@ jobs:
               if: ${{ inputs.run-lint }}
               run: npm run lint:check
 
-            - name: Run tests
-              if: ${{ inputs.run-tests }}
+            - name: Run the tests
+              if: ${{ inputs.run-test }}
               run: npm run test
