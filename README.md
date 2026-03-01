@@ -8,6 +8,6 @@ Reusable GitHub workflows for CI/CD
 
 ```yaml
 jobs:
-    ci:
+    pipes:
         uses: dragunovartem99/pipes/.github/workflows/<workflow>.yaml@main
 ```
