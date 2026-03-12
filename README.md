@@ -26,7 +26,7 @@ jobs:
 Builds and deploys a static site to GitHub Pages
 
 > The caller workflow must grant the required permissions:
-> ```yaml
+> ```txt
 > permissions:
 >     contents: read
 >     pages: write
