@@ -2,7 +2,7 @@
 
 <img width="1920" height="1080" src="https://github.com/user-attachments/assets/19ed7541-aaa3-47c4-b78b-8c2032304276" />
 
-Run the screensaver: `gcc pipes.c -lncurses -o pipes && ./pipes`
+Run the screensaver: `gcc pipes.c -o pipes -lncursesw && ./pipes`
 
 ## Workflows
 
