@@ -1,0 +1,60 @@
+name: Deploy
+
+on:
+    workflow_call:
+        inputs:
+            build-command:
+                description: "Build command"
+                type: string
+                default: build
+            dist-folder:
+                description: "Dist folder"
+                type: string
+                default: ./dist
+            node-version:
+                description: "Node.js version"
+                type: string
+                default: lts/*
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+concurrency:
+    group: "pages"
+    cancel-in-progress: true
+
+jobs:
+    deploy:
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ inputs.node-version }}
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build
+              run: npm run ${{ inputs.build-command }}
+
+            - name: Setup Pages
+              uses: actions/configure-pages@v5
+
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v4
+              with:
+                  path: ${{ inputs.dist-folder }}
+
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4

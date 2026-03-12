@@ -1,4 +1,4 @@
-name: CI Check (Frontend)
+name: CI
 
 on:
     workflow_call:
@@ -16,12 +16,12 @@ on:
                 type: boolean
                 default: true
             run-test:
-                description: "Run the tests"
+                description: "Run tests"
                 type: boolean
                 default: true
 
 jobs:
-    ci-check-frontend:
+    ci:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -45,6 +45,6 @@ jobs:
               if: ${{ inputs.run-lint }}
               run: npm run lint:check
 
-            - name: Run the tests
+            - name: Run tests
               if: ${{ inputs.run-test }}
               run: npm run test
