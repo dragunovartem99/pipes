@@ -2,7 +2,7 @@
 
 Reusable GitHub workflows for CI/CD
 
-<img src="https://github.com/user-attachments/assets/741f0a1f-2791-4933-9bcc-996d4cf3d25f" width="280" />
+<img width="1920" height="1080" src="https://github.com/user-attachments/assets/19ed7541-aaa3-47c4-b78b-8c2032304276" />
 
 ## Workflows
 
