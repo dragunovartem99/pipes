@@ -8,7 +8,7 @@ Reusable GitHub workflows for CI/CD
 
 ### CI (`ci.yaml`)
 
-Runs format, types, lint, and test checks. All steps are enabled by default and can be individually disabled.
+Runs format, types, lint, and test checks. All steps are enabled by default and can be individually disabled
 
 ```yaml
 jobs:
@@ -23,7 +23,7 @@ jobs:
 
 ### Deploy (`deploy.yaml`)
 
-Builds and deploys a static site to GitHub Pages.
+Builds and deploys a static site to GitHub Pages
 
 ```yaml
 jobs:
