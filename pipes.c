@@ -1,13 +1,13 @@
+// gcc pipes.c -o pipes -lncursesw && ./pipes
+
 #include <ncurses.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <time.h>
 
-static const char *LOGO[] = {
-    "┏━┓╻┏━┓┏━╸┏━┓",
-    "┣━┛┃┣━┛┣╸ ┗━┓",
-    "╹  ╹╹  ┗━╸┗━┛"
-};
+static const char *LOGO[] = { "┏━┓╻┏━┓┏━╸┏━┓",
+                              "┣━┛┃┣━┛┣╸ ┗━┓",
+                              "╹  ╹╹  ┗━╸┗━┛" };
 
 static const int DX[] = {0, 1, 0, -1}, DY[] = {-1, 0, 1, 0};
 
