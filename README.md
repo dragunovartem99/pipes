@@ -39,4 +39,6 @@ jobs:
             build-command: build  # default
             dist-folder: ./dist   # default
             node-version: lts/*   # default
+        secrets:
+            build-env: '{"API_URL": "${{ secrets.API_URL }}"}'  # optional, exposed as env vars to the build step
 ```

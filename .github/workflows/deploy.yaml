@@ -15,6 +15,10 @@ on:
                 description: "Node.js version"
                 type: string
                 default: lts/*
+        secrets:
+            build-env:
+                description: 'JSON object of env vars exposed to the build step, e.g. {"API_URL":"https://api.example.com"}'
+                required: false
 
 concurrency:
     group: "pages"
@@ -41,6 +45,7 @@ jobs:
 
             - name: Build
               run: npm run ${{ inputs.build-command }}
+              env: ${{ fromJSON(secrets.build-env || '{}') }}
 
             - name: Setup Pages
               uses: actions/configure-pages@v5
