@@ -6,15 +6,11 @@ on:
             build-command:
                 description: "Build command"
                 type: string
-                default: build
+                required: true
             dist-folder:
                 description: "Dist folder"
                 type: string
-                default: ./dist
-            node-version:
-                description: "Node.js version"
-                type: string
-                default: lts/*
+                required: true
         secrets:
             build-env:
                 description: 'JSON object of env vars exposed to the build step, e.g. {"API_URL":"https://api.example.com"}'
@@ -37,7 +33,6 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v6
               with:
-                  node-version: ${{ inputs.node-version }}
                   cache: "npm"
 
             - name: Install dependencies

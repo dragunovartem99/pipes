@@ -33,9 +33,8 @@ jobs:
     pipes:
         uses: dragunovartem99/pipes/.github/workflows/deploy.yaml@main
         with:
-            build-command: build  # default
-            dist-folder: ./dist   # default
-            node-version: lts/*   # default
+            build-command: build
+            dist-folder: ./dist
         secrets:
             build-env: '{"API_URL": "${{ secrets.API_URL }}"}'  # optional, exposed as env vars to the build step
 ```
