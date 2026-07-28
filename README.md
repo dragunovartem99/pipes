@@ -6,17 +6,14 @@
 
 ### CI (`ci.yaml`)
 
-Runs format, types, lint, and test checks. All steps are enabled by default and can be individually disabled
+Runs the given npm scripts as parallel jobs, one per check
 
 ```yaml
 jobs:
     pipes:
         uses: dragunovartem99/pipes/.github/workflows/ci.yaml@main
         with:
-            run-format: true  # default
-            run-types: true   # default
-            run-lint: true    # default
-            run-test: true    # default
+            checks: '["format:check", "types:check", "lint:check", "test"]'
 ```
 
 ### Deploy (`deploy.yaml`)
