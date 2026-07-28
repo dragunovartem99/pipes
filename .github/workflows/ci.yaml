@@ -7,6 +7,10 @@ on:
                 description: "JSON array of npm scripts to run"
                 type: string
                 required: true
+            node-version:
+                description: "Node version to run the checks on; defaults to the runner's preinstalled Node"
+                type: string
+                required: false
 
 jobs:
     ci:
@@ -22,6 +26,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v6
               with:
+                  node-version: ${{ inputs.node-version }}
                   cache: "npm"
 
             - name: Install dependencies

@@ -14,6 +14,7 @@ jobs:
         uses: dragunovartem99/pipes/.github/workflows/ci.yaml@main
         with:
             checks: '["format:check", "types:check", "lint:check", "test"]'
+            node-version: "24"  # optional, defaults to the runner's preinstalled Node
 ```
 
 ### Deploy (`deploy.yaml`)
