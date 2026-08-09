@@ -39,3 +39,37 @@ jobs:
         secrets:
             build-env: '{"API_URL": "${{ secrets.API_URL }}"}'  # optional, exposed as env vars to the build step
 ```
+
+### Release (`release.yaml`)
+
+Opens a release PR while changesets are pending, then publishes to npm and creates the git tag and
+GitHub release once that PR is merged
+
+> The caller workflow must grant the required permissions:
+> ```txt
+> permissions:
+>     contents: write
+>     pull-requests: write
+>     id-token: write
+> ```
+
+```yaml
+on:
+    push:
+        branches: ["main"]
+
+jobs:
+    pipes:
+        uses: dragunovartem99/pipes/.github/workflows/release.yaml@main
+        with:
+            node-version: "24"  # optional, defaults to the runner's preinstalled Node
+        secrets:
+            npm-token: ${{ secrets.NPM_TOKEN }}  # optional, omit when the package uses trusted publishing
+```
+
+Authenticate one of two ways:
+
+- **Trusted publishing (OIDC)** — omit `npm-token` and set the package's trusted publisher on npmjs.com
+  to this repo and workflow. Nothing to store or rotate; the workflow updates npm to a version that
+  supports it
+- **Token** — add a granular automation token as the `NPM_TOKEN` secret and pass it as above
