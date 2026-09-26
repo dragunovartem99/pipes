@@ -10,7 +10,7 @@ Press Ctrl+C to exit
 
 ## Workflows
 
-Pin to a release tag (`@v1.2.0`); Renovate bumps it in the callers. In a caller repo, name the files
+Pin to a release tag (`@v1.3.0`); Renovate bumps it in the callers. In a caller repo, name the files
 by role only: `ci.yaml`, `deploy.yaml`, `release.yaml`
 
 Node workflows take the Node version from the caller's `.nvmrc`
@@ -22,10 +22,14 @@ Runs the given npm scripts as parallel jobs, one per check
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v1.2.0
+        uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v1.3.0
         with:
             checks: '["format:check", "types:check", "lint:check", "test"]'  # optional, this is the default
             llvm-version: "22"  # optional: installs clang-22 & co. from apt.llvm.org and exports CLANG=clang-22
+            fetch-depth: 0  # optional: full history, e.g. when the build reads `git log` (default 1)
+            cache: .cache/og  # optional: restores paths saved by deploy-vps, newline-separated
+        secrets:
+            build-env: '{"API_URL": "${{ secrets.API_URL }}"}'  # optional, exposed as env vars to every check
 ```
 
 ### CI for Go (`ci-go.yaml`)
@@ -35,7 +39,7 @@ Runs the given make targets as parallel jobs, one per check. golangci-lint is in
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-go.yaml@v1.2.0
+        uses: dragunovartem99/pipes/.github/workflows/ci-go.yaml@v1.3.0
         with:
             checks: '["fmt-check", "lint", "vet", "test"]'  # optional, this is the default
             golangci-lint-version: "v2.13"  # optional, this is the default
@@ -48,7 +52,7 @@ Runs the given make targets as parallel jobs, one per check, after `uv sync --lo
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-python.yaml@v1.2.0
+        uses: dragunovartem99/pipes/.github/workflows/ci-python.yaml@v1.3.0
         with:
             checks: '["fmt-check", "lint", "test"]'  # optional, this is the default
 ```
@@ -68,7 +72,7 @@ Builds and deploys a static site to GitHub Pages
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v1.2.0
+        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v1.3.0
         with:
             build-command: build
             dist-folder: ./dist
@@ -90,7 +94,7 @@ as repository secrets. Two strategies:
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v1.2.0
+        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v1.3.0
         with:
             strategy: release
             setup: node  # optional: node, go or none (default)
@@ -98,7 +102,20 @@ jobs:
             upload: dist/ Caddyfile deploy.sh  # optional
             url: https://example.com  # optional
             llvm-version: "22"  # optional, as in CI for Node
+            fetch-depth: 0  # optional, as in CI for Node
+            cache: .cache/og  # optional: paths cached across deploys (and restored by ci-node), newline-separated
         secrets: inherit
+```
+
+`secrets: inherit` can't carry `build-env`; to expose env vars to the build, pass the secrets explicitly:
+
+```yaml
+        secrets:
+            VPS_HOST: ${{ secrets.VPS_HOST }}
+            VPS_USER: ${{ secrets.VPS_USER }}
+            VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+            VPS_PROJECT_PATH: ${{ secrets.VPS_PROJECT_PATH }}
+            build-env: '{"API_URL": "${{ secrets.API_URL }}"}'
 ```
 
 ### Release to npm (`release-npm.yaml`)
@@ -121,7 +138,7 @@ on:
 
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v1.2.0
+        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v1.3.0
         with:
         secrets:
             npm-token: ${{ secrets.NPM_TOKEN }}  # optional, omit when the package uses trusted publishing
