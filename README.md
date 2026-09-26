@@ -25,6 +25,7 @@ jobs:
         uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v1.0.1
         with:
             checks: '["format:check", "types:check", "lint:check", "test"]'  # optional, this is the default
+            llvm-version: "22"  # optional: installs clang-22 & co. from apt.llvm.org and exports CLANG=clang-22
 ```
 
 ### CI for Go (`ci-go.yaml`)
@@ -84,6 +85,7 @@ jobs:
             build: npm run build  # optional, runs on the runner
             upload: dist/ Caddyfile deploy.sh  # optional
             url: https://example.com  # optional
+            llvm-version: "22"  # optional, as in CI for Node
         secrets: inherit
 ```
 
