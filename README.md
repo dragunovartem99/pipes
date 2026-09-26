@@ -85,10 +85,10 @@ Authenticate one of two ways:
 With [asciinema](https://asciinema.org) and [agg](https://github.com/asciinema/agg), in Tomorrow Night colors:
 
 ```sh
-TERM=xterm asciinema rec --cols 80 --rows 30 -c "timeout --foreground 330.5 ./pipes" raw.cast
-# start once the screen is filled: squash the first 5 minutes into the opening frame, keep 30s (played back at 3x),
+TERM=xterm asciinema rec --cols 80 --rows 30 -c "timeout --foreground 270.5 ./pipes" raw.cast
+# start once the screen is filled: squash the first 4 minutes into the opening frame, keep 30s (played back at 3x),
 # and drop the exit that would blank the last frame
-jq -c 'if type == "object" then . elif .[0] < 330 and .[1] == "o" then .[0] = ([.[0] - 300, 0] | max) else empty end' \
+jq -c 'if type == "object" then . elif .[0] < 270 and .[1] == "o" then .[0] = ([.[0] - 240, 0] | max) else empty end' \
     raw.cast > demo.cast
 agg --font-family "JetBrainsMonoNL Nerd Font Mono" --font-size 32 --line-height 1 --speed 3 --fps-cap 30 --last-frame-duration 0 \
     --theme 1d1f21,c5c8c6,282a2e,cc6666,b5bd68,f0c674,81a2be,b294bb,8abeb7,c5c8c6,969896,cc6666,b5bd68,f0c674,81a2be,b294bb,8abeb7,ffffff \

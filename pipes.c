@@ -43,23 +43,39 @@ int main(void)
         mvaddstr(logo_y + i, logo_x, LOGO[i]);
     attrset(A_NORMAL);
 
+    // track painted cells so new pipes start in the gaps until the screen is full
+    char *filled = calloc(rows * cols, 1);
+    int empty = rows * cols;
+    for (int i = 0; i < rows * cols; i++)
+        if (i / cols >= top && i / cols <= bottom && i % cols >= left && i % cols < right)
+            filled[i] = 1, empty--;
+
     int x = 0, y = 0, dir = 1, steps = 0;
 
     while (1) {
         if (!steps) {
-            x = rand() % cols; y = rand() % rows;
             dir = rand() % 4; steps = 20 + rand() % 30;
             attrset(COLOR_PAIR(rand() % 6 + 1) | A_BOLD);
+
+            if (empty) {
+                int i = -1;
+                for (int k = rand() % empty; k >= 0; k -= !filled[i]) i++;
+                x = i % cols; y = i / cols;
+                mvaddstr(y, x, PIPE[dir][dir]);
+                filled[i] = 1; empty--;
+            } else {
+                x = rand() % cols; y = rand() % rows;
+            }
         }
 
         int next_dir = rand() % 3 ? dir : (dir + (rand() % 2 ? 1 : 3)) % 4;
-        int nx = x + DX[next_dir], ny = y + DY[next_dir];
-        int blocked = (nx < 0 || nx >= cols || ny < 0 || ny >= rows) ||
-                      (ny >= top && ny <= bottom && nx >= left && nx < right);
+        int nx = (x + DX[next_dir] + cols) % cols, ny = (y + DY[next_dir] + rows) % rows;
+        int blocked = ny >= top && ny <= bottom && nx >= left && nx < right;
 
         if (blocked) { steps = 0; continue; }
 
         mvaddstr(ny, nx, PIPE[dir][next_dir]);
+        if (!filled[ny * cols + nx]) filled[ny * cols + nx] = 1, empty--;
         refresh();
         x = nx; y = ny; dir = next_dir;
 
