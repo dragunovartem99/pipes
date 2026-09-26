@@ -1,0 +1,38 @@
+# Deprecated: kept for callers still on @main. Use the platform-named workflow at @v1.0.0
+
+name: CI
+
+on:
+    workflow_call:
+        inputs:
+            checks:
+                description: "JSON array of npm scripts to run"
+                type: string
+                required: true
+            node-version:
+                description: "Node version to run the checks on; defaults to the runner's preinstalled Node"
+                type: string
+                required: false
+
+jobs:
+    ci:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                check: ${{ fromJSON(inputs.checks) }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ inputs.node-version }}
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run check
+              run: npm run ${{ matrix.check }}
