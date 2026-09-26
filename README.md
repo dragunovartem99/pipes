@@ -10,8 +10,10 @@ Press Ctrl+C to exit
 
 ## Workflows
 
-Pin to a release tag (`@v1.0.0`); Renovate bumps it in the callers. In a caller repo, name the files
+Pin to a release tag (`@v1.0.1`); Renovate bumps it in the callers. In a caller repo, name the files
 by role only: `ci.yaml`, `deploy.yaml`, `release.yaml`
+
+Node workflows take the Node version from the caller's `.nvmrc`
 
 ### CI for Node (`ci-node.yaml`)
 
@@ -20,10 +22,9 @@ Runs the given npm scripts as parallel jobs, one per check
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v1.0.0
+        uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v1.0.1
         with:
             checks: '["format:check", "types:check", "lint:check", "test"]'  # optional, this is the default
-            node-version: "24"  # optional, defaults to the runner's preinstalled Node
 ```
 
 ### CI for Go (`ci-go.yaml`)
@@ -33,7 +34,7 @@ Runs the given make targets as parallel jobs, one per check. golangci-lint is in
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-go.yaml@v1.0.0
+        uses: dragunovartem99/pipes/.github/workflows/ci-go.yaml@v1.0.1
         with:
             checks: '["fmt-check", "lint", "vet", "test"]'  # optional, this is the default
             golangci-lint-version: "v2.13"  # optional, this is the default
@@ -54,7 +55,7 @@ Builds and deploys a static site to GitHub Pages
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v1.0.0
+        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v1.0.1
         with:
             build-command: build
             dist-folder: ./dist
@@ -76,7 +77,7 @@ as repository secrets. Two strategies:
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v1.0.0
+        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v1.0.1
         with:
             strategy: release
             setup: node  # optional: node, go or none (default)
@@ -106,9 +107,8 @@ on:
 
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v1.0.0
+        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v1.0.1
         with:
-            node-version: "24"  # optional, defaults to the runner's preinstalled Node
         secrets:
             npm-token: ${{ secrets.NPM_TOKEN }}  # optional, omit when the package uses trusted publishing
 ```
@@ -134,3 +134,7 @@ agg --font-family "JetBrainsMonoNL Nerd Font Mono" --font-size 32 --line-height 
     --theme 1d1f21,c5c8c6,282a2e,cc6666,b5bd68,f0c674,81a2be,b294bb,8abeb7,c5c8c6,969896,cc6666,b5bd68,f0c674,81a2be,b294bb,8abeb7,ffffff \
     demo.cast demo.gif
 ```
+
+## License
+
+MIT

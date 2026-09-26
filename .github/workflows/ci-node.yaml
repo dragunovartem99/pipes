@@ -8,10 +8,6 @@ on:
                 type: string
                 required: false
                 default: '["format:check", "types:check", "lint:check", "test"]'
-            node-version:
-                description: "Node version to run the checks on; defaults to the runner's preinstalled Node"
-                type: string
-                required: false
 
 jobs:
     ci:
@@ -27,7 +23,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v6
               with:
-                  node-version: ${{ inputs.node-version }}
+                  node-version-file: .nvmrc
                   cache: "npm"
 
             - name: Install dependencies
