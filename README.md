@@ -134,7 +134,3 @@ agg --font-family "JetBrainsMonoNL Nerd Font Mono" --font-size 32 --line-height 
     --theme 1d1f21,c5c8c6,282a2e,cc6666,b5bd68,f0c674,81a2be,b294bb,8abeb7,c5c8c6,969896,cc6666,b5bd68,f0c674,81a2be,b294bb,8abeb7,ffffff \
     demo.cast demo.gif
 ```
-
-## License
-
-MIT
