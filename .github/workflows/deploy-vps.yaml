@@ -90,7 +90,7 @@ jobs:
                       | sudo tee /etc/apt/sources.list.d/llvm.list > /dev/null
                   sudo apt-get update
                   sudo apt-get install -y --no-install-recommends \
-                      clang-$LLVM lld-$LLVM llvm-$LLVM clang-tidy-$LLVM clang-format-$LLVM libclang-rt-$LLVM-dev
+                      "clang-$LLVM" "lld-$LLVM" "llvm-$LLVM" "clang-tidy-$LLVM" "clang-format-$LLVM" "libclang-rt-$LLVM-dev"
                   echo "CLANG=clang-$LLVM" >> "$GITHUB_ENV"
 
             - name: Build
@@ -112,6 +112,7 @@ jobs:
               run: |
                   set -eu
                   if [ -n "$UPLOAD" ]; then
+                      # shellcheck disable=SC2086 # UPLOAD is a space-separated path list
                       rsync -azR -e "$SSH" $UPLOAD "$SSH_TARGET:$PROJECT_PATH/"
                   fi
                   $SSH "$SSH_TARGET" "PROJECT_PATH='$PROJECT_PATH' SHA='$GITHUB_SHA' sh -s" <<'SCRIPT'
@@ -134,6 +135,7 @@ jobs:
                   set -eu
                   release="$PROJECT_PATH-releases/$GITHUB_SHA"
                   $SSH "$SSH_TARGET" "mkdir -p '$release'"
+                  # shellcheck disable=SC2086 # UPLOAD is a space-separated path list
                   rsync -az --delete --chmod=D755,F644 --link-dest="$PROJECT_PATH/" -e "$SSH" \
                       $UPLOAD "$SSH_TARGET:$release/"
                   $SSH "$SSH_TARGET" "PROJECT_PATH='$PROJECT_PATH' RELEASE='$release' sh -s" <<'SCRIPT'
