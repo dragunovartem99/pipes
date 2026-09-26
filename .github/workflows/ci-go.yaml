@@ -1,0 +1,42 @@
+name: CI (Go)
+
+on:
+    workflow_call:
+        inputs:
+            checks:
+                description: "JSON array of make targets to run"
+                type: string
+                required: false
+                default: '["fmt-check", "lint", "vet", "test"]'
+            golangci-lint-version:
+                description: "golangci-lint version, installed for the `lint` target"
+                type: string
+                required: false
+                default: "v2.13"
+
+jobs:
+    ci:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                check: ${{ fromJSON(inputs.checks) }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Setup Go
+              uses: actions/setup-go@v6
+              with:
+                  go-version-file: go.mod
+                  cache: true
+
+            - name: Install golangci-lint
+              if: matrix.check == 'lint'
+              uses: golangci/golangci-lint-action@v9
+              with:
+                  version: ${{ inputs.golangci-lint-version }}
+                  install-only: true
+
+            - name: Run check
+              run: make ${{ matrix.check }}

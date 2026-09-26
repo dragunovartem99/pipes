@@ -10,22 +10,36 @@ Press Ctrl+C to exit
 
 ## Workflows
 
-Pin to the `v1` tag; it moves with every backwards-compatible release
+Pin to a release tag (`@v1.0.0`); Renovate bumps it in the callers. In a caller repo, name the files
+by role only: `ci.yaml`, `deploy.yaml`, `release.yaml`
 
-### CI (`ci.yaml`)
+### CI for Node (`ci-node.yaml`)
 
 Runs the given npm scripts as parallel jobs, one per check
 
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci.yaml@v1
+        uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v1.0.0
         with:
             checks: '["format:check", "types:check", "lint:check", "test"]'  # optional, this is the default
             node-version: "24"  # optional, defaults to the runner's preinstalled Node
 ```
 
-### Deploy (`deploy.yaml`)
+### CI for Go (`ci-go.yaml`)
+
+Runs the given make targets as parallel jobs, one per check. golangci-lint is installed for `lint`
+
+```yaml
+jobs:
+    pipes:
+        uses: dragunovartem99/pipes/.github/workflows/ci-go.yaml@v1.0.0
+        with:
+            checks: '["fmt-check", "lint", "vet", "test"]'  # optional, this is the default
+            golangci-lint-version: "v2.13"  # optional, this is the default
+```
+
+### Deploy to GitHub Pages (`deploy-github.yaml`)
 
 Builds and deploys a static site to GitHub Pages
 
@@ -40,24 +54,12 @@ Builds and deploys a static site to GitHub Pages
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy.yaml@v1
+        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v1.0.0
         with:
             build-command: build
             dist-folder: ./dist
         secrets:
             build-env: '{"API_URL": "${{ secrets.API_URL }}"}'  # optional, exposed as env vars to the build step
-```
-
-### Go CI (`go-ci.yaml`)
-
-Checks gofmt, lints with golangci-lint, vets, runs the tests with the race detector and builds
-
-```yaml
-jobs:
-    pipes:
-        uses: dragunovartem99/pipes/.github/workflows/go-ci.yaml@v1
-        with:
-            golangci-lint-version: "v2.13"  # optional, this is the default
 ```
 
 ### Deploy to VPS (`deploy-vps.yaml`)
@@ -74,7 +76,7 @@ as repository secrets. Two strategies:
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v1
+        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v1.0.0
         with:
             strategy: release
             setup: node  # optional: node, go or none (default)
@@ -84,7 +86,7 @@ jobs:
         secrets: inherit
 ```
 
-### Release (`release.yaml`)
+### Release to npm (`release-npm.yaml`)
 
 Opens a release PR while changesets are pending, then publishes to npm and creates the git tag and
 GitHub release once that PR is merged
@@ -104,7 +106,7 @@ on:
 
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/release.yaml@v1
+        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v1.0.0
         with:
             node-version: "24"  # optional, defaults to the runner's preinstalled Node
         secrets:
