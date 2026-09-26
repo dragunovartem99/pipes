@@ -113,6 +113,9 @@ jobs:
             npm-token: ${{ secrets.NPM_TOKEN }}  # optional, omit when the package uses trusted publishing
 ```
 
+The release PR is opened with the workflow's `GITHUB_TOKEN`, and GitHub runs no workflows for
+events that token causes. Where CI is required to merge, close and reopen the release PR to start it
+
 Authenticate one of two ways:
 
 - **Trusted publishing (OIDC)** — omit `npm-token` and set the package's trusted publisher on npmjs.com
