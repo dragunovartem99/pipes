@@ -10,6 +10,8 @@ Press Ctrl+C to exit
 
 ## Workflows
 
+Pin to the `v1` tag; it moves with every backwards-compatible release
+
 ### CI (`ci.yaml`)
 
 Runs the given npm scripts as parallel jobs, one per check
@@ -17,9 +19,9 @@ Runs the given npm scripts as parallel jobs, one per check
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci.yaml@main
+        uses: dragunovartem99/pipes/.github/workflows/ci.yaml@v1
         with:
-            checks: '["format:check", "types:check", "lint:check", "test"]'
+            checks: '["format:check", "types:check", "lint:check", "test"]'  # optional, this is the default
             node-version: "24"  # optional, defaults to the runner's preinstalled Node
 ```
 
@@ -38,12 +40,48 @@ Builds and deploys a static site to GitHub Pages
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy.yaml@main
+        uses: dragunovartem99/pipes/.github/workflows/deploy.yaml@v1
         with:
             build-command: build
             dist-folder: ./dist
         secrets:
             build-env: '{"API_URL": "${{ secrets.API_URL }}"}'  # optional, exposed as env vars to the build step
+```
+
+### Go CI (`go-ci.yaml`)
+
+Checks gofmt, lints with golangci-lint, vets, runs the tests with the race detector and builds
+
+```yaml
+jobs:
+    pipes:
+        uses: dragunovartem99/pipes/.github/workflows/go-ci.yaml@v1
+        with:
+            golangci-lint-version: "v2.13"  # optional, this is the default
+```
+
+### Deploy to VPS (`deploy-vps.yaml`)
+
+Deploys over SSH to a server that has `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` and `VPS_PROJECT_PATH`
+as repository secrets. Two strategies:
+
+- **checkout** (default) — rsyncs `upload` into the git checkout at `VPS_PROJECT_PATH`, resets it to
+  the pushed commit and runs its `./deploy.sh`. For Docker services
+- **release** — rsyncs `upload` into `VPS_PROJECT_PATH-releases/<sha>`, atomically points the
+  `VPS_PROJECT_PATH` symlink at it, runs its `deploy.sh` if present and keeps two older releases for
+  rollback. For static sites
+
+```yaml
+jobs:
+    pipes:
+        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v1
+        with:
+            strategy: release
+            setup: node  # optional: node, go or none (default)
+            build: npm run build  # optional, runs on the runner
+            upload: dist/ Caddyfile deploy.sh  # optional
+            url: https://example.com  # optional
+        secrets: inherit
 ```
 
 ### Release (`release.yaml`)
@@ -66,7 +104,7 @@ on:
 
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/release.yaml@main
+        uses: dragunovartem99/pipes/.github/workflows/release.yaml@v1
         with:
             node-version: "24"  # optional, defaults to the runner's preinstalled Node
         secrets:

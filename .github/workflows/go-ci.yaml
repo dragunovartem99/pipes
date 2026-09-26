@@ -1,0 +1,46 @@
+name: Go CI
+
+on:
+    workflow_call:
+        inputs:
+            golangci-lint-version:
+                description: "golangci-lint version to lint with"
+                type: string
+                required: false
+                default: "v2.13"
+
+jobs:
+    ci:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Setup Go
+              uses: actions/setup-go@v6
+              with:
+                  go-version-file: go.mod
+                  cache: true
+
+            - name: Check formatting
+              run: |
+                  unformatted=$(gofmt -l .)
+                  if [ -n "$unformatted" ]; then
+                      echo "These files need gofmt:"
+                      echo "$unformatted"
+                      exit 1
+                  fi
+
+            - name: Lint
+              uses: golangci/golangci-lint-action@v8
+              with:
+                  version: ${{ inputs.golangci-lint-version }}
+
+            - name: Vet
+              run: go vet ./...
+
+            - name: Test
+              run: go test -race ./...
+
+            - name: Build
+              run: go build ./...

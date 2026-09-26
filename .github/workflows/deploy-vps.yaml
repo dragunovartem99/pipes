@@ -1,0 +1,124 @@
+name: Deploy to VPS
+
+on:
+    workflow_call:
+        inputs:
+            strategy:
+                description: '"checkout" resets the git checkout on the server to the pushed commit; "release" uploads into a fresh release directory and swaps a symlink to it'
+                type: string
+                required: false
+                default: "checkout"
+            setup:
+                description: 'Toolchain for the build step: "node", "go" or "none"'
+                type: string
+                required: false
+                default: "none"
+            build:
+                description: "Shell command run on the runner before uploading, e.g. `npm run build`"
+                type: string
+                required: false
+            upload:
+                description: 'Space-separated paths rsynced to the server. With "checkout" they keep their relative paths inside the checkout; with "release" they form the release, e.g. `dist/ Caddyfile deploy.sh`'
+                type: string
+                required: false
+            url:
+                description: "Public URL shown on the deployment"
+                type: string
+                required: false
+        secrets:
+            VPS_HOST:
+                required: true
+            VPS_USER:
+                required: true
+            VPS_SSH_KEY:
+                required: true
+            VPS_PROJECT_PATH:
+                required: true
+
+# One deploy at a time: they share a directory on the server. A running deploy is left to finish.
+concurrency:
+    group: deploy-production
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        environment:
+            name: production
+            url: ${{ inputs.url }}
+        env:
+            SSH_TARGET: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
+            PROJECT_PATH: ${{ secrets.VPS_PROJECT_PATH }}
+            SSH: ssh -o StrictHostKeyChecking=accept-new
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Setup Node
+              if: inputs.setup == 'node'
+              uses: actions/setup-node@v6
+              with:
+                  cache: "npm"
+
+            - name: Install dependencies
+              if: inputs.setup == 'node'
+              run: npm ci
+
+            - name: Setup Go
+              if: inputs.setup == 'go'
+              uses: actions/setup-go@v6
+              with:
+                  go-version-file: go.mod
+                  cache: true
+
+            - name: Build
+              if: inputs.build != ''
+              run: ${{ inputs.build }}
+
+            - name: Setup SSH
+              uses: webfactory/ssh-agent@v0.10.0
+              with:
+                  ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+            # The checkout on the server is a deploy target, never a place to commit from:
+            # reset to the pushed commit so local drift can't block a deploy. Uploads should be
+            # git-ignored (e.g. a prebuilt binary in bin/), so the reset leaves them alone.
+            - name: Deploy checkout
+              if: inputs.strategy == 'checkout'
+              env:
+                  UPLOAD: ${{ inputs.upload }}
+              run: |
+                  set -eu
+                  if [ -n "$UPLOAD" ]; then
+                      rsync -azR -e "$SSH" $UPLOAD "$SSH_TARGET:$PROJECT_PATH/"
+                  fi
+                  $SSH "$SSH_TARGET" "PROJECT_PATH='$PROJECT_PATH' SHA='$GITHUB_SHA' sh -s" <<'SCRIPT'
+                  set -eu
+                  cd "$PROJECT_PATH"
+                  git fetch origin
+                  git reset --hard "$SHA"
+                  ./deploy.sh
+                  SCRIPT
+
+            # Each deploy is staged as its own release directory; unchanged files are hardlinked
+            # against the live release. The live path is a symlink, and renaming a fresh symlink
+            # over it is atomic, so the site never disappears mid-deploy. The two previous
+            # releases stay for an instant rollback.
+            - name: Deploy release
+              if: inputs.strategy == 'release'
+              env:
+                  UPLOAD: ${{ inputs.upload }}
+              run: |
+                  set -eu
+                  release="$PROJECT_PATH-releases/$GITHUB_SHA"
+                  $SSH "$SSH_TARGET" "mkdir -p '$release'"
+                  rsync -az --delete --chmod=D755,F644 --link-dest="$PROJECT_PATH/" -e "$SSH" \
+                      $UPLOAD "$SSH_TARGET:$release/"
+                  $SSH "$SSH_TARGET" "PROJECT_PATH='$PROJECT_PATH' RELEASE='$release' sh -s" <<'SCRIPT'
+                  set -eu
+                  ln -sfn "$RELEASE" "$PROJECT_PATH.tmp"
+                  mv -T "$PROJECT_PATH.tmp" "$PROJECT_PATH"
+                  cd "$RELEASE"
+                  if [ -f deploy.sh ]; then bash deploy.sh; fi
+                  ls -dt "${RELEASE%/*}"/*/ | tail -n +4 | xargs -r rm -rf
+                  SCRIPT

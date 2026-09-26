@@ -6,7 +6,8 @@ on:
             checks:
                 description: "JSON array of npm scripts to run"
                 type: string
-                required: true
+                required: false
+                default: '["format:check", "types:check", "lint:check", "test"]'
             node-version:
                 description: "Node version to run the checks on; defaults to the runner's preinstalled Node"
                 type: string
