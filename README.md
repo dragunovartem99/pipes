@@ -70,8 +70,8 @@ as repository secrets. Two strategies:
 - **checkout** (default) — rsyncs `upload` into the git checkout at `VPS_PROJECT_PATH`, resets it to
   the pushed commit and runs its `./deploy.sh`. For Docker services
 - **release** — rsyncs `upload` into `VPS_PROJECT_PATH-releases/<sha>`, atomically points the
-  `VPS_PROJECT_PATH` symlink at it, runs its `deploy.sh` if present and keeps two older releases for
-  rollback. For static sites
+  `VPS_PROJECT_PATH` symlink at it, runs its `deploy.sh` if present and removes the previous release.
+  For static sites
 
 ```yaml
 jobs:

@@ -4,7 +4,7 @@ on:
     workflow_call:
         inputs:
             strategy:
-                description: '"checkout" resets the git checkout on the server to the pushed commit; "release" uploads into a fresh release directory and swaps a symlink to it'
+                description: '"checkout" resets the git checkout on the server to the pushed commit; "release" uploads into a fresh directory and atomically swaps a symlink to it'
                 type: string
                 required: false
                 default: "checkout"
@@ -102,8 +102,8 @@ jobs:
 
             # Each deploy is staged as its own release directory; unchanged files are hardlinked
             # against the live release. The live path is a symlink, and renaming a fresh symlink
-            # over it is atomic, so the site never disappears mid-deploy. The two previous
-            # releases stay for an instant rollback.
+            # over it is atomic, so the site never disappears mid-deploy. The previous releases
+            # are removed once the new one is live.
             - name: Deploy release
               if: inputs.strategy == 'release'
               env:
@@ -120,5 +120,5 @@ jobs:
                   mv -T "$PROJECT_PATH.tmp" "$PROJECT_PATH"
                   cd "$RELEASE"
                   if [ -f deploy.sh ]; then bash deploy.sh; fi
-                  ls -dt "${RELEASE%/*}"/*/ | tail -n +4 | xargs -r rm -rf
+                  find "${RELEASE%/*}" -mindepth 1 -maxdepth 1 -type d ! -path "$RELEASE" -exec rm -rf {} +
                   SCRIPT
