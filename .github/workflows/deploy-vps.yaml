@@ -26,10 +26,26 @@ on:
                 type: string
                 required: false
             llvm-version:
-                description: "LLVM major (e.g. \"22\") to install clang, lld, clang-tidy, clang-format and the sanitizer runtimes from apt.llvm.org; exports CLANG=clang-<major>. Skipped when empty"
+                description: "Deprecated, use `before`. LLVM major (e.g. \"22\") to install clang, lld, clang-tidy, clang-format and the sanitizer runtimes from apt.llvm.org; exports CLANG=clang-<major>. Skipped when empty"
+                type: string
+                required: false
+            before:
+                description: "Shell command run after dependencies are installed and before the build, e.g. a toolchain install script. It can export env vars to later steps via $GITHUB_ENV"
+                type: string
+                required: false
+            fetch-depth:
+                description: "Commits to fetch; 0 for full history (e.g. when the build reads `git log`)"
+                type: number
+                required: false
+                default: 1
+            cache:
+                description: "Newline-separated paths cached across deploys (and restored by `ci-node`), e.g. generated images the build only re-renders when changed"
                 type: string
                 required: false
         secrets:
+            build-env:
+                description: 'JSON object of env vars exposed to the build step, e.g. {"API_URL":"https://api.example.com"}'
+                required: false
             VPS_HOST:
                 required: true
             VPS_USER:
@@ -57,6 +73,8 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v6
+              with:
+                  fetch-depth: ${{ inputs.fetch-depth }}
 
             - name: Setup Node
               if: inputs.setup == 'node'
@@ -93,9 +111,23 @@ jobs:
                       "clang-$LLVM" "lld-$LLVM" "llvm-$LLVM" "clang-tidy-$LLVM" "clang-format-$LLVM" "libclang-rt-$LLVM-dev"
                   echo "CLANG=clang-$LLVM" >> "$GITHUB_ENV"
 
+            - name: Before
+              if: inputs.before != ''
+              run: ${{ inputs.before }}
+
+            # Keyed by commit so every deploy saves a fresh copy; restore-keys picks up the latest.
+            - name: Cache
+              if: inputs.cache != ''
+              uses: actions/cache@v6
+              with:
+                  path: ${{ inputs.cache }}
+                  key: pipes-${{ github.sha }}
+                  restore-keys: pipes-
+
             - name: Build
               if: inputs.build != ''
               run: ${{ inputs.build }}
+              env: ${{ fromJSON(secrets.build-env || '{}') }}
 
             - name: Setup SSH
               uses: webfactory/ssh-agent@v0.10.0
