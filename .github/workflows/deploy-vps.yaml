@@ -26,7 +26,11 @@ on:
                 type: string
                 required: false
             llvm-version:
-                description: "LLVM major (e.g. \"22\") to install clang, lld, clang-tidy, clang-format and the sanitizer runtimes from apt.llvm.org; exports CLANG=clang-<major>. Skipped when empty"
+                description: "Deprecated, use `before`. LLVM major (e.g. \"22\") to install clang, lld, clang-tidy, clang-format and the sanitizer runtimes from apt.llvm.org; exports CLANG=clang-<major>. Skipped when empty"
+                type: string
+                required: false
+            before:
+                description: "Shell command run after dependencies are installed and before the build, e.g. a toolchain install script. It can export env vars to later steps via $GITHUB_ENV"
                 type: string
                 required: false
             fetch-depth:
@@ -106,6 +110,10 @@ jobs:
                   sudo apt-get install -y --no-install-recommends \
                       "clang-$LLVM" "lld-$LLVM" "llvm-$LLVM" "clang-tidy-$LLVM" "clang-format-$LLVM" "libclang-rt-$LLVM-dev"
                   echo "CLANG=clang-$LLVM" >> "$GITHUB_ENV"
+
+            - name: Before
+              if: inputs.before != ''
+              run: ${{ inputs.before }}
 
             # Keyed by commit so every deploy saves a fresh copy; restore-keys picks up the latest.
             - name: Cache

@@ -13,7 +13,9 @@ Press Ctrl+C to exit
 Pin to a release tag (`@v1.3.0`); Renovate bumps it in the callers. In a caller repo, name the files
 by role only: `ci.yaml`, `deploy.yaml`, `release.yaml`
 
-Node workflows take the Node version from the caller's `.nvmrc`
+Node workflows take the Node version from the caller's `.nvmrc`. Anything else the caller needs
+(a C toolchain, a CLI) goes in its own script, run via `before`. `llvm-version` is deprecated in
+favour of it and will be removed in v2
 
 ### CI for Node (`ci-node.yaml`)
 
@@ -25,7 +27,7 @@ jobs:
         uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v1.3.0
         with:
             checks: '["format:check", "types:check", "lint:check", "test"]'  # optional, this is the default
-            llvm-version: "22"  # optional: installs clang-22 & co. from apt.llvm.org and exports CLANG=clang-22
+            before: bash scripts/install-toolchain.sh  # optional: runs after `npm ci`, before the checks
             fetch-depth: 0  # optional: full history, e.g. when the build reads `git log` (default 1)
             cache: .cache/og  # optional: restores paths saved by deploy-vps, newline-separated
         secrets:
@@ -101,7 +103,7 @@ jobs:
             build: npm run build  # optional, runs on the runner
             upload: dist/ Caddyfile deploy.sh  # optional
             url: https://example.com  # optional
-            llvm-version: "22"  # optional, as in CI for Node
+            before: bash scripts/install-toolchain.sh  # optional: runs after setup, before the build
             fetch-depth: 0  # optional, as in CI for Node
             cache: .cache/og  # optional: paths cached across deploys (and restored by ci-node), newline-separated
         secrets: inherit
