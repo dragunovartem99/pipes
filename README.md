@@ -10,7 +10,7 @@ Press Ctrl+C to exit
 
 ## Workflows
 
-Pin to a release tag (`@v1.0.1`); Renovate bumps it in the callers. In a caller repo, name the files
+Pin to a release tag (`@v1.1.0`); Renovate bumps it in the callers. In a caller repo, name the files
 by role only: `ci.yaml`, `deploy.yaml`, `release.yaml`
 
 Node workflows take the Node version from the caller's `.nvmrc`
@@ -22,7 +22,7 @@ Runs the given npm scripts as parallel jobs, one per check
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v1.0.1
+        uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v1.1.0
         with:
             checks: '["format:check", "types:check", "lint:check", "test"]'  # optional, this is the default
             llvm-version: "22"  # optional: installs clang-22 & co. from apt.llvm.org and exports CLANG=clang-22
@@ -35,10 +35,22 @@ Runs the given make targets as parallel jobs, one per check. golangci-lint is in
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-go.yaml@v1.0.1
+        uses: dragunovartem99/pipes/.github/workflows/ci-go.yaml@v1.1.0
         with:
             checks: '["fmt-check", "lint", "vet", "test"]'  # optional, this is the default
             golangci-lint-version: "v2.13"  # optional, this is the default
+```
+
+### CI for Python (`ci-python.yaml`)
+
+Runs the given make targets as parallel jobs, one per check, after `uv sync --locked`
+
+```yaml
+jobs:
+    pipes:
+        uses: dragunovartem99/pipes/.github/workflows/ci-python.yaml@v1.1.0
+        with:
+            checks: '["fmt-check", "lint", "test"]'  # optional, this is the default
 ```
 
 ### Deploy to GitHub Pages (`deploy-github.yaml`)
@@ -56,7 +68,7 @@ Builds and deploys a static site to GitHub Pages
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v1.0.1
+        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v1.1.0
         with:
             build-command: build
             dist-folder: ./dist
@@ -78,7 +90,7 @@ as repository secrets. Two strategies:
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v1.0.1
+        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v1.1.0
         with:
             strategy: release
             setup: node  # optional: node, go or none (default)
@@ -109,7 +121,7 @@ on:
 
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v1.0.1
+        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v1.1.0
         with:
         secrets:
             npm-token: ${{ secrets.NPM_TOKEN }}  # optional, omit when the package uses trusted publishing
