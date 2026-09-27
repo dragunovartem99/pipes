@@ -10,12 +10,11 @@ Press Ctrl+C to exit
 
 ## Workflows
 
-Pin to a release tag (`@v1.3.0`); Renovate bumps it in the callers. In a caller repo, name the files
+Pin to a release tag (`@v2.0.0`); Renovate bumps it in the callers. In a caller repo, name the files
 by role only: `ci.yaml`, `deploy.yaml`, `release.yaml`
 
 Node workflows take the Node version from the caller's `.nvmrc`. Anything else the caller needs
-(a C toolchain, a CLI) goes in its own script, run via `before`. `llvm-version` is deprecated in
-favour of it and will be removed in v2
+(a C toolchain, a CLI) goes in its own script, run via `before`
 
 ### CI for Node (`ci-node.yaml`)
 
@@ -24,7 +23,7 @@ Runs the given npm scripts as parallel jobs, one per check
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v1.3.0
+        uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v2.0.0
         with:
             checks: '["format:check", "types:check", "lint:check", "test"]'  # optional, this is the default
             before: bash scripts/install-toolchain.sh  # optional: runs after `npm ci`, before the checks
@@ -41,7 +40,7 @@ Runs the given make targets as parallel jobs, one per check. golangci-lint is in
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-go.yaml@v1.3.0
+        uses: dragunovartem99/pipes/.github/workflows/ci-go.yaml@v2.0.0
         with:
             checks: '["fmt-check", "lint", "vet", "test"]'  # optional, this is the default
             golangci-lint-version: "v2.13"  # optional, this is the default
@@ -54,7 +53,7 @@ Runs the given make targets as parallel jobs, one per check, after `uv sync --lo
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-python.yaml@v1.3.0
+        uses: dragunovartem99/pipes/.github/workflows/ci-python.yaml@v2.0.0
         with:
             checks: '["fmt-check", "lint", "test"]'  # optional, this is the default
 ```
@@ -74,7 +73,7 @@ Builds and deploys a static site to GitHub Pages
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v1.3.0
+        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v2.0.0
         with:
             build-command: build
             dist-folder: ./dist
@@ -96,7 +95,7 @@ as repository secrets. Two strategies:
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v1.3.0
+        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v2.0.0
         with:
             strategy: release
             setup: node  # optional: node, go or none (default)
@@ -140,7 +139,7 @@ on:
 
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v1.3.0
+        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v2.0.0
         with:
         secrets:
             npm-token: ${{ secrets.NPM_TOKEN }}  # optional, omit when the package uses trusted publishing
