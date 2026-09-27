@@ -8,10 +8,6 @@ on:
                 type: string
                 required: false
                 default: '["format:check", "types:check", "lint:check", "test"]'
-            llvm-version:
-                description: "Deprecated, use `before`. LLVM major (e.g. \"22\") to install clang, lld, clang-tidy, clang-format and the sanitizer runtimes from apt.llvm.org; exports CLANG=clang-<major>. Skipped when empty"
-                type: string
-                required: false
             before:
                 description: "Shell command run after dependencies are installed and before the checks, e.g. a toolchain install script. It can export env vars to later steps via $GITHUB_ENV"
                 type: string
@@ -51,23 +47,6 @@ jobs:
 
             - name: Install dependencies
               run: npm ci
-
-            # From apt.llvm.org rather than the runner's clang: pinning the major keeps
-            # clang-format output identical to the version the repo was formatted with.
-            - name: Install LLVM
-              if: inputs.llvm-version != ''
-              env:
-                  LLVM: ${{ inputs.llvm-version }}
-              run: |
-                  set -eu
-                  curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/keyrings/llvm.asc > /dev/null
-                  codename=$(lsb_release -cs)
-                  echo "deb [signed-by=/etc/apt/keyrings/llvm.asc] https://apt.llvm.org/$codename/ llvm-toolchain-$codename-$LLVM main" \
-                      | sudo tee /etc/apt/sources.list.d/llvm.list > /dev/null
-                  sudo apt-get update
-                  sudo apt-get install -y --no-install-recommends \
-                      "clang-$LLVM" "lld-$LLVM" "llvm-$LLVM" "clang-tidy-$LLVM" "clang-format-$LLVM" "libclang-rt-$LLVM-dev"
-                  echo "CLANG=clang-$LLVM" >> "$GITHUB_ENV"
 
             - name: Before
               if: inputs.before != ''
