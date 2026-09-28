@@ -1,6 +1,6 @@
 # Pipes
 
-<img src="demo.gif" alt="Colored pipes growing randomly across the terminal around the PIPES logo" />
+<img src="demo.gif" alt="Colored pipes with &quot;PIPES&quot;" />
 
 ```sh
 gcc pipes.c -o pipes -lncursesw && ./pipes
@@ -152,14 +152,13 @@ Authenticate one of two ways:
   supports it
 - **Token** — add a granular automation token as the `NPM_TOKEN` secret and pass it as above
 
-## Recording the GIF
+## Recording
 
 With [asciinema](https://asciinema.org) and [agg](https://github.com/asciinema/agg), in Tomorrow Night colors:
 
 ```sh
 TERM=xterm asciinema rec --cols 80 --rows 30 -c "timeout --foreground 270.5 ./pipes" raw.cast
-# start once the screen is filled: squash the first 4 minutes into the opening frame, keep 30s (played back at 3x),
-# and drop the exit that would blank the last frame
+# squash the first 4 minutes, drop the exit
 jq -c 'if type == "object" then . elif .[0] < 270 and .[1] == "o" then .[0] = ([.[0] - 240, 0] | max) else empty end' \
     raw.cast > demo.cast
 agg --font-family "JetBrainsMonoNL Nerd Font Mono" --font-size 32 --line-height 1 --speed 3 --fps-cap 30 --last-frame-duration 0 \
