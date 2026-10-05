@@ -25,8 +25,8 @@ on:
                 description: "Public URL shown on the deployment"
                 type: string
                 required: false
-            before:
-                description: "Shell command run after dependencies are installed and before the build, e.g. a toolchain install script. It can export env vars to later steps via $GITHUB_ENV"
+            install:
+                description: "Shell command that installs extra tools, run after setup and before the build, e.g. `sudo apt-get install -y shfmt` or a script. It can export env vars to later steps via $GITHUB_ENV"
                 type: string
                 required: false
             fetch-depth:
@@ -90,9 +90,9 @@ jobs:
                   go-version-file: go.mod
                   cache: true
 
-            - name: Before
-              if: inputs.before != ''
-              run: ${{ inputs.before }}
+            - name: Install
+              if: inputs.install != ''
+              run: ${{ inputs.install }}
 
             # Keyed by commit so every deploy saves a fresh copy; restore-keys picks up the latest.
             - name: Cache
