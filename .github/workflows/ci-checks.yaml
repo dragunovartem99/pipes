@@ -1,15 +1,19 @@
-name: CI (Node)
+name: CI
 
 on:
     workflow_call:
         inputs:
-            checks:
-                description: "JSON array of npm scripts to run"
+            setup:
+                description: 'Toolchain: "node", "go", "python" or "none"'
                 type: string
                 required: false
-                default: '["format:check", "types:check", "lint:check", "test"]'
+                default: "none"
+            checks:
+                description: 'JSON array of checks, e.g. `["lint", "test"]`: npm scripts with setup "node", make targets otherwise'
+                type: string
+                required: true
             before:
-                description: "Shell command run after dependencies are installed and before the checks, e.g. a toolchain install script. It can export env vars to later steps via $GITHUB_ENV"
+                description: "Shell command run after setup and before the checks, e.g. a toolchain install script. It can export env vars to later steps via $GITHUB_ENV"
                 type: string
                 required: false
             fetch-depth:
@@ -21,13 +25,18 @@ on:
                 description: "Newline-separated paths restored from the latest `deploy-vps` cache, e.g. generated images the build only re-renders when changed. Restore only: the deploy saves it"
                 type: string
                 required: false
+            golangci-lint-version:
+                description: 'golangci-lint version, installed with setup "go" for the `lint` check'
+                type: string
+                required: false
+                default: "v2.13"
         secrets:
             build-env:
                 description: 'JSON object of env vars exposed to every check, e.g. {"API_URL":"https://api.example.com"}'
                 required: false
 
 jobs:
-    ci:
+    check:
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
@@ -40,13 +49,39 @@ jobs:
                   fetch-depth: ${{ inputs.fetch-depth }}
 
             - name: Setup Node
+              if: inputs.setup == 'node'
               uses: actions/setup-node@v6
               with:
                   node-version-file: .nvmrc
                   cache: "npm"
 
-            - name: Install dependencies
+            - name: Install Node dependencies
+              if: inputs.setup == 'node'
               run: npm ci
+
+            - name: Setup Go
+              if: inputs.setup == 'go'
+              uses: actions/setup-go@v6
+              with:
+                  go-version-file: go.mod
+                  cache: true
+
+            - name: Install golangci-lint
+              if: inputs.setup == 'go' && matrix.check == 'lint'
+              uses: golangci/golangci-lint-action@v9
+              with:
+                  version: ${{ inputs.golangci-lint-version }}
+                  install-only: true
+
+            # uv installs the Python version the project asks for, from
+            # .python-version or requires-python.
+            - name: Setup uv
+              if: inputs.setup == 'python'
+              uses: astral-sh/setup-uv@v6
+
+            - name: Install Python dependencies
+              if: inputs.setup == 'python'
+              run: uv sync --locked
 
             - name: Before
               if: inputs.before != ''
@@ -61,5 +96,5 @@ jobs:
                   restore-keys: pipes-
 
             - name: Run check
-              run: npm run ${{ matrix.check }}
+              run: ${{ inputs.setup == 'node' && 'npm run' || 'make' }} ${{ matrix.check }}
               env: ${{ fromJSON(secrets.build-env || '{}') }}

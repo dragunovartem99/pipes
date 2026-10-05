@@ -35,7 +35,7 @@ on:
                 required: false
                 default: 1
             cache:
-                description: "Newline-separated paths cached across deploys (and restored by `ci-node`), e.g. generated images the build only re-renders when changed"
+                description: "Newline-separated paths cached across deploys (and restored by `ci-checks`), e.g. generated images the build only re-renders when changed"
                 type: string
                 required: false
         secrets:
