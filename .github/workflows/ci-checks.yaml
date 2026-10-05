@@ -12,8 +12,8 @@ on:
                 description: 'JSON array of checks, e.g. `["lint", "test"]`: npm scripts with setup "node", make targets otherwise'
                 type: string
                 required: true
-            before:
-                description: "Shell command run after setup and before the checks, e.g. a toolchain install script. It can export env vars to later steps via $GITHUB_ENV"
+            install:
+                description: "Shell command that installs extra tools, run after setup and before the checks, e.g. `sudo apt-get install -y shfmt` or a script. It can export env vars to later steps via $GITHUB_ENV"
                 type: string
                 required: false
             fetch-depth:
@@ -83,9 +83,9 @@ jobs:
               if: inputs.setup == 'python'
               run: uv sync --locked
 
-            - name: Before
-              if: inputs.before != ''
-              run: ${{ inputs.before }}
+            - name: Install
+              if: inputs.install != ''
+              run: ${{ inputs.install }}
 
             - name: Restore cache
               if: inputs.cache != ''

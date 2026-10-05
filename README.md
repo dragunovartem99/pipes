@@ -15,7 +15,7 @@ by role only: `ci.yaml`, `deploy.yaml`, `release.yaml`
 
 Workflows that take a `setup` install that toolchain: `node` reads the caller's `.nvmrc` and runs
 `npm ci`, `go` reads `go.mod`, `python` runs `uv sync --locked`, `none` installs nothing. Anything
-else the caller needs (a C toolchain, a CLI) goes in its own script, run via `before`
+else the caller needs (a C toolchain, a CLI) goes in `install`, a command or a script
 
 ### CI (`ci-checks.yaml`)
 
@@ -29,7 +29,7 @@ jobs:
         with:
             setup: node  # optional: node, go, python or none (default)
             checks: '["format:check", "types:check", "lint:check", "test"]'
-            before: bash scripts/install-toolchain.sh  # optional: runs after setup, before the checks
+            install: sudo apt-get install -y shfmt  # optional: runs after setup, before the checks
             fetch-depth: 0  # optional: full history, e.g. when the build reads `git log` (default 1)
             cache: .cache/og  # optional: restores paths saved by deploy-vps, newline-separated
             golangci-lint-version: "v2.13"  # optional, this is the default
@@ -85,7 +85,7 @@ jobs:
             build: npm run build  # optional, runs on the runner
             upload: dist/ Caddyfile deploy.sh  # optional
             url: https://example.com  # optional
-            before: bash scripts/install-toolchain.sh  # optional: runs after setup, before the build
+            install: bash scripts/install-toolchain.sh  # optional: runs after setup, before the build
             fetch-depth: 0  # optional, as in CI
             cache: .cache/og  # optional: paths cached across deploys (and restored by ci-checks), newline-separated
         secrets: inherit
