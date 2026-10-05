@@ -10,53 +10,35 @@ Press Ctrl+C to exit
 
 ## Workflows
 
-Pin to a release tag (`@v2.0.0`); Renovate bumps it in the callers. In a caller repo, name the files
+Pin to a release tag (`@v3.0.0`); Renovate bumps it in the callers. In a caller repo, name the files
 by role only: `ci.yaml`, `deploy.yaml`, `release.yaml`
 
-Node workflows take the Node version from the caller's `.nvmrc`. Anything else the caller needs
-(a C toolchain, a CLI) goes in its own script, run via `before`
+Workflows that take a `setup` install that toolchain: `node` reads the caller's `.nvmrc` and runs
+`npm ci`, `go` reads `go.mod`, `python` runs `uv sync --locked`, `none` installs nothing. Anything
+else the caller needs (a C toolchain, a CLI) goes in its own script, run via `before`
 
-### CI for Node (`ci-node.yaml`)
+### CI (`ci-checks.yaml`)
 
-Runs the given npm scripts as parallel jobs, one per check
+Runs the given checks as parallel jobs, one per check: npm scripts with `setup: node`, make targets
+otherwise. With `setup: go`, golangci-lint is installed for `lint`
 
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-node.yaml@v2.0.0
+        uses: dragunovartem99/pipes/.github/workflows/ci-checks.yaml@v3.0.0
         with:
-            checks: '["format:check", "types:check", "lint:check", "test"]'  # optional, this is the default
-            before: bash scripts/install-toolchain.sh  # optional: runs after `npm ci`, before the checks
+            setup: node  # optional: node, go, python or none (default)
+            checks: '["format:check", "types:check", "lint:check", "test"]'
+            before: bash scripts/install-toolchain.sh  # optional: runs after setup, before the checks
             fetch-depth: 0  # optional: full history, e.g. when the build reads `git log` (default 1)
             cache: .cache/og  # optional: restores paths saved by deploy-vps, newline-separated
+            golangci-lint-version: "v2.13"  # optional, this is the default
         secrets:
             build-env: '{"API_URL": "${{ secrets.API_URL }}"}'  # optional, exposed as env vars to every check
 ```
 
-### CI for Go (`ci-go.yaml`)
-
-Runs the given make targets as parallel jobs, one per check. golangci-lint is installed for `lint`
-
-```yaml
-jobs:
-    pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-go.yaml@v2.0.0
-        with:
-            checks: '["fmt-check", "lint", "vet", "test"]'  # optional, this is the default
-            golangci-lint-version: "v2.13"  # optional, this is the default
-```
-
-### CI for Python (`ci-python.yaml`)
-
-Runs the given make targets as parallel jobs, one per check, after `uv sync --locked`
-
-```yaml
-jobs:
-    pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-python.yaml@v2.0.0
-        with:
-            checks: '["fmt-check", "lint", "test"]'  # optional, this is the default
-```
+Typical checks: `["format:check", "types:check", "lint:check", "test"]` for Node,
+`["fmt-check", "lint", "vet", "test"]` for Go, `["fmt-check", "lint", "test"]` for Python
 
 ### Deploy to GitHub Pages (`deploy-github.yaml`)
 
@@ -73,9 +55,10 @@ Builds and deploys a static site to GitHub Pages
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v2.0.0
+        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v3.0.0
         with:
-            build-command: build
+            setup: node  # optional: node, go or none (default)
+            build: npm run build
             dist-folder: ./dist
         secrets:
             build-env: '{"API_URL": "${{ secrets.API_URL }}"}'  # optional, exposed as env vars to the build step
@@ -95,7 +78,7 @@ as repository secrets. Two strategies:
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v2.0.0
+        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v3.0.0
         with:
             strategy: release
             setup: node  # optional: node, go or none (default)
@@ -103,8 +86,8 @@ jobs:
             upload: dist/ Caddyfile deploy.sh  # optional
             url: https://example.com  # optional
             before: bash scripts/install-toolchain.sh  # optional: runs after setup, before the build
-            fetch-depth: 0  # optional, as in CI for Node
-            cache: .cache/og  # optional: paths cached across deploys (and restored by ci-node), newline-separated
+            fetch-depth: 0  # optional, as in CI
+            cache: .cache/og  # optional: paths cached across deploys (and restored by ci-checks), newline-separated
         secrets: inherit
 ```
 
@@ -139,7 +122,7 @@ on:
 
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v2.0.0
+        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v3.0.0
         with:
         secrets:
             npm-token: ${{ secrets.NPM_TOKEN }}  # optional, omit when the package uses trusted publishing
