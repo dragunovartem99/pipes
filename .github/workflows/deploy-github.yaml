@@ -4,7 +4,7 @@ on:
     workflow_call:
         inputs:
             setup:
-                description: 'Toolchain for the build step: "node", "go" or "none"'
+                description: 'Toolchain for the build step: "node", "go", "python" or "none"'
                 type: string
                 required: false
                 default: "none"
@@ -13,9 +13,18 @@ on:
                 type: string
                 required: true
             dist-folder:
-                description: "Dist folder"
+                description: "Folder the build writes the site to, e.g. `./dist`"
                 type: string
                 required: true
+            install:
+                description: "Shell command that installs extra tools, run after setup and before the build, e.g. `sudo apt-get install -y shfmt` or a script. It can export env vars to later steps via $GITHUB_ENV"
+                type: string
+                required: false
+            fetch-depth:
+                description: "Commits to fetch; 0 for full history (e.g. when the build reads `git log`)"
+                type: number
+                required: false
+                default: 1
         secrets:
             build-env:
                 description: 'JSON object of env vars exposed to the build step, e.g. {"API_URL":"https://api.example.com"}'
@@ -34,6 +43,8 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v6
+              with:
+                  fetch-depth: ${{ inputs.fetch-depth }}
 
             - name: Setup Node
               if: inputs.setup == 'node'
@@ -52,6 +63,22 @@ jobs:
               with:
                   go-version-file: go.mod
                   cache: true
+                  # Includes tools/go.sum, so tools pinned there (e.g. golangci-lint) are cached too
+                  cache-dependency-path: "**/go.sum"
+
+            # uv installs the Python version the project asks for, from
+            # .python-version or requires-python.
+            - name: Setup uv
+              if: inputs.setup == 'python'
+              uses: astral-sh/setup-uv@v6
+
+            - name: Install Python dependencies
+              if: inputs.setup == 'python'
+              run: uv sync --locked
+
+            - name: Install
+              if: inputs.install != ''
+              run: ${{ inputs.install }}
 
             - name: Build
               run: ${{ inputs.build }}

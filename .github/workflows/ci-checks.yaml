@@ -9,7 +9,11 @@ on:
                 required: false
                 default: "none"
             checks:
-                description: 'JSON array of checks, e.g. `["lint", "test"]`: npm scripts with setup "node", make targets otherwise'
+                description: 'JSON array of checks, e.g. `["lint", "test"]`. Each runs as `<runner> <check>` in its own job'
+                type: string
+                required: true
+            runner:
+                description: 'Command each check is passed to, e.g. "make" or "npm run"'
                 type: string
                 required: true
             install:
@@ -25,11 +29,6 @@ on:
                 description: "Newline-separated paths restored from the latest `deploy-vps` cache, e.g. generated images the build only re-renders when changed. Restore only: the deploy saves it"
                 type: string
                 required: false
-            golangci-lint-version:
-                description: 'golangci-lint version, installed with setup "go" for the `lint` check'
-                type: string
-                required: false
-                default: "v2.13"
         secrets:
             build-env:
                 description: 'JSON object of env vars exposed to every check, e.g. {"API_URL":"https://api.example.com"}'
@@ -65,13 +64,8 @@ jobs:
               with:
                   go-version-file: go.mod
                   cache: true
-
-            - name: Install golangci-lint
-              if: inputs.setup == 'go' && matrix.check == 'lint'
-              uses: golangci/golangci-lint-action@v9
-              with:
-                  version: ${{ inputs.golangci-lint-version }}
-                  install-only: true
+                  # Includes tools/go.sum, so tools pinned there (e.g. golangci-lint) are cached too
+                  cache-dependency-path: "**/go.sum"
 
             # uv installs the Python version the project asks for, from
             # .python-version or requires-python.
@@ -96,5 +90,5 @@ jobs:
                   restore-keys: pipes-
 
             - name: Run check
-              run: ${{ inputs.setup == 'node' && 'npm run' || 'make' }} ${{ matrix.check }}
+              run: ${{ inputs.runner }} ${{ matrix.check }}
               env: ${{ fromJSON(secrets.build-env || '{}') }}
