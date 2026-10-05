@@ -15,8 +15,7 @@ on:
             runner:
                 description: 'Command each check is passed to, e.g. "make" or "npm run"'
                 type: string
-                required: false
-                default: "make"
+                required: true
             install:
                 description: "Shell command that installs extra tools, run after setup and before the checks, e.g. `sudo apt-get install -y shfmt` or a script. It can export env vars to later steps via $GITHUB_ENV"
                 type: string

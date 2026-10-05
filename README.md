@@ -30,7 +30,7 @@ jobs:
         uses: dragunovartem99/pipes/.github/workflows/ci-checks.yaml@v3.0.0
         with:
             setup: node  # optional: node, go, python or none (default)
-            runner: npm run  # optional, default make
+            runner: npm run  # or make, or any command that takes the check name
             checks: '["format:check", "types:check", "lint:check", "test"]'
             install: sudo apt-get install -y shfmt  # optional: runs after setup, before the checks
             fetch-depth: 0  # optional: full history, e.g. when the build reads `git log` (default 1)
@@ -39,8 +39,9 @@ jobs:
             build-env: '{"API_URL": "${{ secrets.API_URL }}"}'  # optional, exposed as env vars to every check
 ```
 
-Typical checks: `["format:check", "types:check", "lint:check", "test"]` with `runner: npm run` for
-Node, `["fmt-check", "lint", "vet", "test"]` for Go, `["fmt-check", "lint", "test"]` for Python
+Typical: `runner: npm run` with `["format:check", "types:check", "lint:check", "test"]` for Node,
+`runner: make` with `["fmt-check", "lint", "vet", "test"]` for Go or `["fmt-check", "lint", "test"]`
+for Python
 
 ### Deploy to GitHub Pages (`deploy-github.yaml`)
 
