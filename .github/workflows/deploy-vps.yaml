@@ -9,7 +9,7 @@ on:
                 required: false
                 default: "checkout"
             setup:
-                description: 'Toolchain for the build step: "node", "go" or "none"'
+                description: 'Toolchain for the build step: "node", "go", "python" or "none"'
                 type: string
                 required: false
                 default: "none"
@@ -89,6 +89,18 @@ jobs:
               with:
                   go-version-file: go.mod
                   cache: true
+                  # Includes tools/go.sum, so tools pinned there (e.g. golangci-lint) are cached too
+                  cache-dependency-path: "**/go.sum"
+
+            # uv installs the Python version the project asks for, from
+            # .python-version or requires-python.
+            - name: Setup uv
+              if: inputs.setup == 'python'
+              uses: astral-sh/setup-uv@v6
+
+            - name: Install Python dependencies
+              if: inputs.setup == 'python'
+              run: uv sync --locked
 
             - name: Install
               if: inputs.install != ''

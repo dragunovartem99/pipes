@@ -15,12 +15,14 @@ by role only: `ci.yaml`, `deploy.yaml`, `release.yaml`
 
 Workflows that take a `setup` install that toolchain: `node` reads the caller's `.nvmrc` and runs
 `npm ci`, `go` reads `go.mod`, `python` runs `uv sync --locked`, `none` installs nothing. Anything
-else the caller needs (a C toolchain, a CLI) goes in `install`, a command or a script
+else the caller needs (a C toolchain, a CLI) goes in `install`, a command or a script. Go tools
+belong in a `tools/go.mod` run via `go tool -modfile=tools/go.mod`, so local and CI share one pinned
+version; `setup: go` caches every `go.sum`, including that one
 
 ### CI (`ci-checks.yaml`)
 
-Runs the given checks as parallel jobs, one per check: npm scripts with `setup: node`, make targets
-otherwise. With `setup: go`, golangci-lint is installed for `lint`
+Runs the given checks as parallel jobs, one per check, each as `<runner> <check>`. Required status
+checks show up as `pipes / ci (<check>)`
 
 ```yaml
 jobs:
@@ -28,17 +30,17 @@ jobs:
         uses: dragunovartem99/pipes/.github/workflows/ci-checks.yaml@v3.0.0
         with:
             setup: node  # optional: node, go, python or none (default)
+            runner: npm run  # optional, default make
             checks: '["format:check", "types:check", "lint:check", "test"]'
             install: sudo apt-get install -y shfmt  # optional: runs after setup, before the checks
             fetch-depth: 0  # optional: full history, e.g. when the build reads `git log` (default 1)
             cache: .cache/og  # optional: restores paths saved by deploy-vps, newline-separated
-            golangci-lint-version: "v2.13"  # optional, this is the default
         secrets:
             build-env: '{"API_URL": "${{ secrets.API_URL }}"}'  # optional, exposed as env vars to every check
 ```
 
-Typical checks: `["format:check", "types:check", "lint:check", "test"]` for Node,
-`["fmt-check", "lint", "vet", "test"]` for Go, `["fmt-check", "lint", "test"]` for Python
+Typical checks: `["format:check", "types:check", "lint:check", "test"]` with `runner: npm run` for
+Node, `["fmt-check", "lint", "vet", "test"]` for Go, `["fmt-check", "lint", "test"]` for Python
 
 ### Deploy to GitHub Pages (`deploy-github.yaml`)
 
@@ -57,9 +59,11 @@ jobs:
     pipes:
         uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v3.0.0
         with:
-            setup: node  # optional: node, go or none (default)
+            setup: node  # optional: node, go, python or none (default)
             build: npm run build
             dist-folder: ./dist
+            install: bash scripts/install-toolchain.sh  # optional: runs after setup, before the build
+            fetch-depth: 0  # optional, as in CI
         secrets:
             build-env: '{"API_URL": "${{ secrets.API_URL }}"}'  # optional, exposed as env vars to the build step
 ```
@@ -81,7 +85,7 @@ jobs:
         uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v3.0.0
         with:
             strategy: release
-            setup: node  # optional: node, go or none (default)
+            setup: node  # optional: node, go, python or none (default)
             build: npm run build  # optional, runs on the runner
             upload: dist/ Caddyfile deploy.sh  # optional
             url: https://example.com  # optional
