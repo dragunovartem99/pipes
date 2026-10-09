@@ -37,12 +37,11 @@ jobs:
               run: npm ci
 
             - name: Create release PR or publish
-              uses: changesets/action@v1
+              uses: changesets/action@v2
               with:
-                  version: npx changeset version
-                  publish: npx changeset publish
-                  commit: "Release"
-                  title: "Release"
+                  version-script: npx changeset version
+                  publish-script: npx changeset publish
+                  commit-message: "Release"
+                  pr-title: "Release"
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
