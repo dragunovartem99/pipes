@@ -61,20 +61,12 @@ jobs:
         runs-on: ubuntu-latest
         environment:
             name: production
-            # On workflow_dispatch the job-level `inputs` come out empty, dropping the URL;
-            # inside steps they resolve, so the URL goes through a step output.
-            url: ${{ steps.url.outputs.url }}
+            url: ${{ inputs.url }}
         env:
             SSH_TARGET: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
             PROJECT_PATH: ${{ secrets.VPS_PROJECT_PATH }}
             SSH: ssh -o StrictHostKeyChecking=accept-new
         steps:
-            - name: URL
-              id: url
-              env:
-                  URL: ${{ inputs.url }}
-              run: echo "url=$URL" >> "$GITHUB_OUTPUT"
-
             - name: Checkout
               uses: actions/checkout@v6
               with:
