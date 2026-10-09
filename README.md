@@ -10,7 +10,7 @@ Press Ctrl+C to exit
 
 ## Workflows
 
-Pin to a release tag (`@v3.1.0`); Renovate bumps it in the callers. In a caller repo, name the files
+Pin to a release tag (`@v3.1.1`); Renovate bumps it in the callers. In a caller repo, name the files
 by role only: `ci.yaml`, `deploy.yaml`, `release.yaml`
 
 Workflows that take a `setup` install that toolchain: `node` reads the caller's `.nvmrc` and runs
@@ -27,7 +27,7 @@ checks show up as `pipes / ci (<check>)`
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/ci-checks.yaml@v3.1.0
+        uses: dragunovartem99/pipes/.github/workflows/ci-checks.yaml@v3.1.1
         with:
             setup: node  # optional: node, go, python or none (default)
             runner: npm run  # or make, or any command that takes the check name
@@ -58,7 +58,7 @@ Builds and deploys a static site to GitHub Pages
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v3.1.0
+        uses: dragunovartem99/pipes/.github/workflows/deploy-github.yaml@v3.1.1
         with:
             setup: node  # optional: node, go, python or none (default)
             build: npm run build
@@ -83,7 +83,7 @@ as repository secrets. Two strategies:
 ```yaml
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v3.1.0
+        uses: dragunovartem99/pipes/.github/workflows/deploy-vps.yaml@v3.1.1
         with:
             strategy: release
             setup: node  # optional: node, go, python or none (default)
@@ -127,7 +127,7 @@ on:
 
 jobs:
     pipes:
-        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v3.1.0
+        uses: dragunovartem99/pipes/.github/workflows/release-npm.yaml@v3.1.1
         with:
         secrets:
             npm-token: ${{ secrets.NPM_TOKEN }}  # optional, omit when the package uses trusted publishing
