@@ -70,7 +70,7 @@ jobs:
             # .python-version or requires-python.
             - name: Setup uv
               if: inputs.setup == 'python'
-              uses: astral-sh/setup-uv@v6
+              uses: astral-sh/setup-uv@v10.3.3
 
             - name: Install Python dependencies
               if: inputs.setup == 'python'
